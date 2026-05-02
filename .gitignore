@@ -1,0 +1,24 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+venv/
+.env
+
+# OS
+.DS_Store
+Thumbs.db
+
+# IDE
+.vscode/
+.idea/
+*.swp
+
+# Generated PDFs (resumes get rebuilt every run)
+db/pdfs/
+db/*.png
+
+# Wrangler / Cloudflare local state
+worker/.wrangler/
+worker/node_modules/

@@ -3,8 +3,8 @@
 Returns a *new* dict in the same shape as master_resume.json, with experience
 and project bullets rewritten to highlight overlap with the JD.
 
-Free-tier limits (May 2026): gemini-1.5-flash → 15 RPM, 1500 RPD. Plenty for
-20-25 jobs/day.
+Free-tier limits (May 2026): gemini-2.5-flash → generous RPM/RPD on the
+AI Studio free tier. Plenty for 25 jobs/day.
 """
 
 from __future__ import annotations
@@ -15,11 +15,12 @@ import os
 import time
 from copy import deepcopy
 
-import google.generativeai as genai
+from google import genai
+from google.genai import types
 
 logger = logging.getLogger(__name__)
 
-MODEL_NAME = os.environ.get("GEMINI_MODEL", "gemini-1.5-flash")
+MODEL_NAME = os.environ.get("GEMINI_MODEL", "gemini-2.5-flash")
 
 PROMPT_TEMPLATE = """You are tailoring a candidate's resume to a specific job description.
 The candidate will read the result themselves before applying, so it must sound
@@ -71,32 +72,33 @@ JD:
 Return the tailored resume JSON now:"""
 
 
-def _configure() -> None:
+def _client() -> genai.Client:
     api_key = os.environ.get("GEMINI_API_KEY")
     if not api_key:
         raise RuntimeError("GEMINI_API_KEY env var not set")
-    genai.configure(api_key=api_key)
+    return genai.Client(api_key=api_key)
 
 
 def tailor(master_resume: dict, role: str, company: str, jd: str) -> dict:
-    _configure()
-    model = genai.GenerativeModel(MODEL_NAME)
+    client = _client()
     prompt = PROMPT_TEMPLATE.format(
         resume_json=json.dumps(master_resume, indent=2),
         role=role, company=company, jd=jd[:6000],
     )
     for attempt in range(3):
         try:
-            resp = model.generate_content(
-                prompt,
-                generation_config={
-                    "temperature": 0.2,
-                    "response_mime_type": "application/json",
-                },
+            resp = client.models.generate_content(
+                model=MODEL_NAME,
+                contents=prompt,
+                config=types.GenerateContentConfig(
+                    temperature=0.2,
+                    response_mime_type="application/json",
+                ),
             )
-            text = resp.text.strip()
+            text = (resp.text or "").strip()
+            if not text:
+                raise ValueError("empty response from Gemini")
             tailored = json.loads(text)
-            # sanity: must keep name and at least 1 experience
             if not tailored.get("name") or not tailored.get("experience"):
                 raise ValueError("tailored resume missing required fields")
             return tailored
@@ -106,5 +108,8 @@ def tailor(master_resume: dict, role: str, company: str, jd: str) -> dict:
         except Exception as e:    # noqa: BLE001
             logger.warning("Gemini call failed (attempt %d): %s", attempt + 1, e)
             time.sleep(5)
-    logger.error("All Gemini attempts failed for %s @ %s — falling back to master resume", role, company)
+    logger.error(
+        "All Gemini attempts failed for %s @ %s — falling back to master resume",
+        role, company,
+    )
     return deepcopy(master_resume)

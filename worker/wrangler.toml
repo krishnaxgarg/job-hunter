@@ -1,0 +1,9 @@
+name = "job-hunter"
+main = "src/index.js"
+compatibility_date = "2025-04-01"
+
+# No KV/D1 needed — state lives in the GH repo's SQLite file.
+# Secrets are set via `wrangler secret put` (see README Step 5).
+
+[observability]
+enabled = true

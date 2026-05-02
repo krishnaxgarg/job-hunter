@@ -1,0 +1,73 @@
+name: Job Hunter Hourly
+
+# Runs every hour at :05 (offset to avoid the busy :00 slot on GH).
+# Change to "0 */2 * * *" if you hit the 2000-min/month cap on private repos.
+on:
+  schedule:
+    - cron: "5 * * * *"
+  workflow_dispatch: {}            # lets you trigger manually from Actions tab
+
+# Only one run at a time — prevents two crons stomping on the SQLite DB.
+concurrency:
+  group: job-hunter-hourly
+  cancel-in-progress: false
+
+permissions:
+  contents: write                  # needed to commit the updated jobs.db
+
+jobs:
+  hunt:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+
+    steps:
+      - name: Checkout repo (with full history so commits work)
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+
+      - name: Set up Python 3.11
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+
+      - name: Install Python deps
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
+      - name: Install TeX Live (small subset, just what Jake's template needs)
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y --no-install-recommends \
+            texlive-latex-base \
+            texlive-latex-recommended \
+            texlive-latex-extra \
+            texlive-fonts-recommended \
+            texlive-fonts-extra \
+            lmodern
+
+      - name: Verify pdflatex available
+        run: which pdflatex && pdflatex --version | head -1
+
+      - name: Scrape new jobs
+        env:
+          JOB_DB_PATH: db/jobs.db
+        run: python -m scrapers.run_all
+
+      - name: Tailor + send to Telegram
+        env:
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TELEGRAM_CHAT_ID:   ${{ secrets.TELEGRAM_CHAT_ID }}
+          GEMINI_API_KEY:     ${{ secrets.GEMINI_API_KEY }}
+          JOB_DB_PATH:        db/jobs.db
+        run: python -m bot.send_jobs
+
+      - name: Commit updated DB back to repo
+        run: |
+          git config user.name  "job-hunter-bot"
+          git config user.email "bot@users.noreply.github.com"
+          git add db/jobs.db || true
+          git diff --cached --quiet || git commit -m "chore: update jobs.db [$(date -u +%FT%TZ)]"
+          git push || echo "nothing to push"

@@ -1,0 +1,109 @@
+{
+  "name": "Krishna Garg",
+  "phone": "+91 7088268440",
+  "email": "krishna.garg9021@gmail.com",
+  "linkedin": "linkedin.com/in/krishnaxgarg",
+  "github": "github.com/krishnaxgarg",
+  "portfolio": "",
+  "location": "Bengaluru, India",
+
+  "education": [
+    {
+      "school": "Vellore Institute of Technology",
+      "location": "Bhopal, MP",
+      "degree": "B.Tech in Computer Science and Engineering",
+      "dates": "Sep 2021 – Aug 2025",
+      "gpa": "8.31 / 10",
+      "coursework": [
+        "Data Structures", "Algorithms", "Operating Systems",
+        "Database Management Systems", "Computer Networks", "Object Oriented Programming"
+      ]
+    }
+  ],
+
+  "certifications": [
+    {"name": "AWS Certified Cloud Practitioner", "issuer": "AWS", "year": "2023"},
+    {"name": "Ethnus MERN Stack Certification", "issuer": "Ethnus", "year": "2022"}
+  ],
+
+  "experience": [
+    {
+      "title": "Full Stack Developer",
+      "company": "Reya.ai (Curatech)",
+      "location": "Bengaluru, India",
+      "dates": "May 2025 – Present",
+      "bullets": [
+        "Built a health longevity platform in Flutter that ships from one codebase to Web, iOS, Android, and macOS.",
+        "Designed and shipped backend services with Django (MVT), exposing REST APIs that power memberships, product sales, and personalized service flows.",
+        "Wrote a library of reusable, state-managed Flutter widgets that talk to the Django APIs, keeping the UI snappy and consistent across platforms.",
+        "Cut API response times and tuned slow database queries, making the platform faster and more reliable as the product grew."
+      ],
+      "tech": ["Flutter", "Dart", "Django", "Python", "REST APIs", "PostgreSQL"]
+    },
+    {
+      "title": "React Developer (Internship)",
+      "company": "Carikture India",
+      "location": "Remote",
+      "dates": "May 2022 – July 2022",
+      "bullets": [
+        "Built a data management system covering 500+ colleges, cutting data retrieval time by ~50% with tighter database queries and cleaner REST endpoints.",
+        "Worked with cross-functional teams in an agile setup using ReactJS, Node.js, JavaScript, HTML/CSS, and SQL.",
+        "Set up Git workflows and used AWS for deployment and CI, keeping the system available and stable."
+      ],
+      "tech": ["ReactJS", "Node.js", "JavaScript", "HTML/CSS", "SQL", "AWS", "Git"]
+    }
+  ],
+
+  "projects": [
+    {
+      "name": "PerfectBuys",
+      "tech": ["HTML/CSS", "JavaScript", "ReactJS", "Node.js", "PayPal Integration"],
+      "dates": "Sep 2023 – Dec 2023",
+      "bullets": [
+        "Built an online inventory management system with full CRUD and PayPal payment gateway integration.",
+        "Designed a responsive interface for inventory tracking and secure checkout.",
+        "Improved system efficiency by ~30% by refactoring code paths and applying web performance best practices."
+      ],
+      "link": ""
+    },
+    {
+      "name": "InnerVerse",
+      "tech": ["ReactJS", "MongoDB", "ExpressJS", "Node.js", "JWT Authentication"],
+      "dates": "Jan 2024 – Mar 2024",
+      "bullets": [
+        "Built a mental health platform with interactive features and an intuitive UI on the MERN stack.",
+        "Lifted user engagement ~40% by speeding up API responses and tightening the responsive design.",
+        "Set up secure JWT-based auth and modeled MongoDB collections for clean data integrity."
+      ],
+      "link": ""
+    },
+    {
+      "name": "Advanced CNN — Lung Image Classification",
+      "tech": ["Python", "TensorFlow", "Keras", "CNN", "Machine Learning"],
+      "dates": "Sep 2024 – Jan 2025",
+      "bullets": [
+        "Built a CNN image-classification pipeline for lung image datasets pulled from zipped archives on Google Drive.",
+        "Pre-processed images with Gaussian blur, histogram equalization, and resizing to clean up training data.",
+        "Designed a multi-layer CNN (conv + max-pool + batch-norm + dropout) with EarlyStopping and ReduceLROnPlateau callbacks; reached >90% validation accuracy.",
+        "Generated loss/accuracy plots and confusion matrices on Google Colab so the runs were reproducible."
+      ],
+      "link": ""
+    }
+  ],
+
+  "skills": {
+    "languages": ["C++", "Python", "JavaScript", "Java", "Dart", "SQL"],
+    "frameworks": ["ReactJS", "Node.js", "ExpressJS", "Django", "Flutter"],
+    "databases": ["PostgreSQL", "MongoDB", "MySQL"],
+    "cloud_devops": ["AWS", "Git"],
+    "other": ["Data Structures & Algorithms", "REST APIs", "JWT Authentication", "Figma", "TensorFlow", "Keras"]
+  },
+
+  "achievements": [
+    "GeeksforGeeks 6-Star Coder, Global Rank 37",
+    "Codeforces Expert, peak rating 1796",
+    "LeetCode Guardian level",
+    "CodeChef 4-star",
+    "Global Rank 137 in GFG Contest, March 2024 Edition"
+  ]
+}

@@ -1,0 +1,92 @@
+# Job-search filters. Tweak to taste.
+
+experience_years:
+  min: 0               # Krishna: ~1 yr full-time at Reya.ai (May 2025 onward) — also catch entry-level
+  max: 3               # widen to catch "1-3 yrs" and "2-3 yrs" postings
+
+salary_lpa:
+  min: 15              # only show jobs offering >= 15 LPA when the salary is mentioned
+                       # jobs with salary "Not disclosed" are still kept (most India jobs don't list it)
+
+locations:
+  india_any: true      # any city in India
+  remote_global: true  # also include remote-from-anywhere global roles
+  exclude_cities: []   # e.g. ["Pune"] to skip
+
+titles_include:
+  - "software engineer"
+  - "software developer"
+  - "sde"
+  - "swe"
+  - "backend engineer"
+  - "frontend engineer"
+  - "full stack"
+  - "fullstack"
+  - "full-stack"
+  - "data engineer"
+  - "machine learning engineer"
+  - "ml engineer"
+  - "platform engineer"
+  - "devops engineer"
+  - "site reliability"
+
+titles_exclude:
+  - "intern"
+  - "principal"      # too senior for 1-3 yrs
+  - "staff"
+  - "director"
+  - "manager"
+  - "qa"
+  - "test engineer"
+  - ".net"           # remove if you do .NET
+  - "salesforce"
+
+tech_keywords:        # tuned to Krishna's stack — used to score relevance + tailor resume
+  - python
+  - java
+  - c++
+  - javascript
+  - typescript
+  - react
+  - node
+  - express
+  - django
+  - flask
+  - fastapi
+  - flutter
+  - dart
+  - mongodb
+  - postgresql
+  - mysql
+  - sql
+  - aws
+  - rest
+  - jwt
+  - tensorflow
+  - keras
+  - machine learning
+  - docker
+  - git
+
+target_companies:     # always include jobs from these even if other filters don't pass
+  - google
+  - microsoft
+  - amazon
+  - meta
+  - apple
+  - netflix
+  - atlassian
+  - stripe
+  - razorpay
+  - flipkart
+  - swiggy
+  - zomato
+  - cred
+  - phonepe
+  - postman
+  - freshworks
+  - zoho
+  - browserstack
+
+daily_limit: 25       # max jobs to push to telegram per day
+hourly_limit: 5       # max jobs per hourly run

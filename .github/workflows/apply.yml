@@ -1,0 +1,100 @@
+name: Auto Apply
+
+# Triggered by the Cloudflare Worker via repository_dispatch when the user
+# taps the "Apply" button on a Telegram job card.
+on:
+  repository_dispatch:
+    types: [auto_apply]
+
+permissions:
+  contents: write
+
+jobs:
+  apply:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+
+      - name: Install deps
+        run: pip install -r requirements.txt
+
+      - name: Resolve job details from DB
+        id: resolve
+        env:
+          JOB_DB_PATH: db/jobs.db
+        run: |
+          python -m bot.resolve_job --id "${{ github.event.client_payload.job_id }}"
+
+      - name: Bail if ATS unsupported
+        if: steps.resolve.outputs.ats == ''
+        env:
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TELEGRAM_CHAT_ID:   ${{ secrets.TELEGRAM_CHAT_ID }}
+          URL:                ${{ steps.resolve.outputs.url }}
+        run: |
+          python -c "
+          import os, requests
+          tok=os.environ['TELEGRAM_BOT_TOKEN']; chat=os.environ['TELEGRAM_CHAT_ID']; url=os.environ['URL']
+          requests.post(f'https://api.telegram.org/bot{tok}/sendMessage',
+                        data={'chat_id':chat,
+                              'text':f'🟡 Auto-fill not available for this site.\nOpen and apply manually:\n{url}'})
+          "
+          exit 0
+
+      - name: Install Playwright Chromium
+        if: steps.resolve.outputs.ats != ''
+        run: python -m playwright install --with-deps chromium
+
+      - name: Run auto-apply
+        if: steps.resolve.outputs.ats != ''
+        env:
+          AUTO_SUBMIT: ${{ vars.AUTO_SUBMIT || 'false' }}
+        run: |
+          python -m bot.apply_helper \
+            --url "${{ steps.resolve.outputs.url }}" \
+            --ats "${{ steps.resolve.outputs.ats }}" \
+            --pdf "${{ steps.resolve.outputs.pdf_path }}" \
+            --screenshot "db/apply_${{ github.event.client_payload.job_id }}.png" \
+            > apply_result.json
+          cat apply_result.json
+
+      - name: Send screenshot back to Telegram
+        if: steps.resolve.outputs.ats != ''
+        env:
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TELEGRAM_CHAT_ID:   ${{ secrets.TELEGRAM_CHAT_ID }}
+          JOB_URL:            ${{ steps.resolve.outputs.url }}
+        run: |
+          python -c "
+          import os, json, requests
+          tok=os.environ['TELEGRAM_BOT_TOKEN']; chat=os.environ['TELEGRAM_CHAT_ID']
+          shot='db/apply_${{ github.event.client_payload.job_id }}.png'
+          try:
+              result = json.load(open('apply_result.json'))
+          except Exception:
+              result = {'ok': False, 'reason': 'no result file'}
+          url = os.environ['JOB_URL']
+          if result.get('ok'):
+              msg = ('✅ Form auto-filled. Review the screenshot and click submit on the page:\n'+url) \
+                    if not result.get('submitted') else \
+                    ('🚀 Submitted. Confirm on the page:\n'+url)
+          else:
+              msg = f'⚠️ Auto-apply failed: {result.get(\"reason\",\"unknown\")}\nApply manually:\n{url}'
+          if os.path.exists(shot):
+              with open(shot,'rb') as f:
+                  requests.post(f'https://api.telegram.org/bot{tok}/sendPhoto',
+                                data={'chat_id':chat,'caption':msg},
+                                files={'photo':f})
+          else:
+              requests.post(f'https://api.telegram.org/bot{tok}/sendMessage',
+                            data={'chat_id':chat,'text':msg})
+          "

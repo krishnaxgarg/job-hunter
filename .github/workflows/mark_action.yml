@@ -1,0 +1,46 @@
+name: Mark User Action
+
+# Records skip/apply taps in the SQLite DB so we don't resend the same job
+# (also serves as an audit log of what you've actioned).
+
+on:
+  repository_dispatch:
+    types: [mark_skip, mark_apply_pending]
+
+permissions:
+  contents: write
+
+jobs:
+  mark:
+    runs-on: ubuntu-latest
+    timeout-minutes: 3
+
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: { python-version: "3.11" }
+
+      - name: Update DB row
+        env:
+          ACTION_TYPE: ${{ github.event.action }}
+          JOB_ID:      ${{ github.event.client_payload.job_id }}
+        run: |
+          python -c "
+          import os, sqlite3
+          from datetime import datetime
+          action = 'skip' if os.environ['ACTION_TYPE']=='mark_skip' else 'apply'
+          jid = os.environ['JOB_ID']
+          c = sqlite3.connect('db/jobs.db')
+          c.execute('UPDATE jobs SET user_action=?, applied_at=? WHERE id=?',
+                    (action, datetime.utcnow().isoformat(), jid))
+          c.commit(); c.close()
+          print(f'marked {jid} as {action}')
+          "
+
+      - name: Commit
+        run: |
+          git config user.name  "job-hunter-bot"
+          git config user.email "bot@users.noreply.github.com"
+          git add db/jobs.db
+          git diff --cached --quiet || git commit -m "chore: ${{ github.event.action }} ${{ github.event.client_payload.job_id }}"
+          git push || true

@@ -98,6 +98,25 @@ def _skills_block(skills: dict) -> str:
     return "\n".join(parts)
 
 
+def _summary_block(summary: str) -> str:
+    if not summary:
+        return ""
+    return (
+        "\\section*{Summary}\n"
+        f"\\small{{{esc(summary)}}}\n\\vspace{{-6pt}}"
+    )
+
+
+def _achievements_block(achievements: list) -> str:
+    if not achievements:
+        return ""
+    parts = ["\\section{Achievements}", "\\begin{itemize}[leftmargin=0.15in, label={$\\bullet$}]"]
+    for a in achievements:
+        parts.append(f"  \\small\\item {esc(a)}")
+    parts.append("\\end{itemize}")
+    return "\n".join(parts)
+
+
 # ─── Render ──────────────────────────────────────────────────────────────────
 
 
@@ -110,10 +129,12 @@ def render_tex(tailored: dict) -> str:
         "{{EMAIL}}": esc(tailored.get("email", "")),
         "{{LINKEDIN}}": esc(tailored.get("linkedin", "")),
         "{{GITHUB}}": esc(tailored.get("github", "")),
+        "{{SUMMARY_BLOCK}}": _summary_block(tailored.get("summary", "")),
         "{{EDUCATION_BLOCK}}": _education_block(tailored.get("education", [])),
         "{{EXPERIENCE_BLOCK}}": _experience_block(tailored.get("experience", [])),
         "{{PROJECTS_BLOCK}}": _projects_block(tailored.get("projects", [])),
         "{{SKILLS_BLOCK}}": _skills_block(tailored.get("skills", {})),
+        "{{ACHIEVEMENTS_BLOCK}}": _achievements_block(tailored.get("achievements", [])),
     }
     for k, v in replacements.items():
         tex = tex.replace(k, v)
